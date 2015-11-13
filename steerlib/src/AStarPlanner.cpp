@@ -67,15 +67,30 @@ namespace SteerLib
 		return p;
 	}
 
+    double manhattan(Util::Point s, Util::Point g){
+        double distance;
+        distance = abs(s.x - g.x) + abs(s.z - g.z);
+        return distance;
+    }
 
+    double euclidean(Util::Point s, Util::Point g){
+        double distance;
+        distance = sqrt(pow((s.x - g.x), 2) + pow((s.z - g.z), 2));
+        //std::cout << distance << std::endl;
+        return distance;
+    }
 
 	bool AStarPlanner::computePath(std::vector<Util::Point>& agent_path,  Util::Point start, Util::Point goal, SteerLib::GridDatabase2D * _gSpatialDatabase, bool append_to_path)
 	{
 		gSpatialDatabase = _gSpatialDatabase;
 
 		//TODO
-		std::cout<<"\nIn A*";
+		std::cout<<"\nIn A*\n";
 
+        std::vector<> closedsed;
+        std::vector<Util::Point> openset = start;
+        std::vector<Util::Point> came_from; 
+        euclidean(start, goal);
 		return false;
 	}
 }
