@@ -79,6 +79,11 @@ namespace SteerLib
         //std::cout << distance << std::endl;
         return distance;
     }
+    
+    std::vector<Util::Point> reconstruct_path(std::vector<AStarPlannerNode*> came_from, AStarPlannerNode* curr){
+        std::vector<Util::Point> path;
+        return path;
+    }
 
 	bool AStarPlanner::computePath(std::vector<Util::Point>& agent_path,  Util::Point start, Util::Point goal, SteerLib::GridDatabase2D * _gSpatialDatabase, bool append_to_path)
 	{
@@ -87,10 +92,38 @@ namespace SteerLib
 		//TODO
 		std::cout<<"\nIn A*\n";
 
-        std::vector<> closedsed;
-        std::vector<Util::Point> openset = start;
-        std::vector<Util::Point> came_from; 
-        euclidean(start, goal);
+        std::vector<AStarPlannerNode*> closedsed;
+        std::vector<AStarPlannerNode*> openset;
+        std::vector<AStarPlannerNode*> came_from;
+        
+        double g = 0;
+        double f = g + euclidean(start, goal);
+        
+        AStarPlannerNode* startNode = new AStarPlannerNode(start, g, f, NULL);
+        openset.push_back(startNode);
+        
+        while(!openset.empty()){
+            
+            AStarPlannerNode* curr = openset[0];
+            
+            int index = 0;
+            for(int i = 1; i < openset.size(); i++){
+                if(openset[i] < curr){
+                    curr = openset[i];
+                    index = i;
+                }
+            }
+            
+            if(curr->point == goal){
+                agent_path = reconstruct_path(came_from, curr);
+                return true;
+            }
+            
+            openset.erase(openset.begin() + index);
+            closedsed.push_back(curr);
+            
+        }
+        
 		return false;
 	}
 }
