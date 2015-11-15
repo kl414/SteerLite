@@ -80,9 +80,70 @@ namespace SteerLib
         return distance;
     }
     
-    std::vector<Util::Point> reconstruct_path(std::vector<AStarPlannerNode*> came_from, AStarPlannerNode* curr){
+    std::vector<Util::Point> reconstruct_path(std::map<AStarPlannerNode, AStarPlannerNode> came_from, AStarPlannerNode curr){
         std::vector<Util::Point> path;
+        path.push_back(curr.point);
         return path;
+    }
+    
+    std::vector<AStarPlannerNode> findNeighbor(Util::Point p1, SteerLib::GridDatabase2D* gSpatialDatabase){
+        int index;
+        float x = p1.x;
+        float z = p1.z;
+        std::vector<AStarPlannerNode> result;
+        Util::Point p;
+        AStarPlanner* planner = new AStarPlanner();
+       
+        index = gSpatialDatabase->getCellIndexFromLocation(x, z - 1);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        index = gSpatialDatabase->getCellIndexFromLocation(x+1, z);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        index = gSpatialDatabase->getCellIndexFromLocation(x, z+1);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        index = gSpatialDatabase->getCellIndexFromLocation(x-1, z);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        index = gSpatialDatabase->getCellIndexFromLocation(x-1, z-1);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        index = gSpatialDatabase->getCellIndexFromLocation(x+1, z-1);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        index = gSpatialDatabase->getCellIndexFromLocation(x+1, z+1);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        
+        index = gSpatialDatabase->getCellIndexFromLocation(x-1, z+1);
+        if(planner->canBeTraversed(index)){
+            gSpatialDatabase->getLocationFromIndex(index, p);
+            result.push_back(AStarPlannerNode(p, 0, 0, NULL));
+        }
+        
+        return result;
     }
 
 	bool AStarPlanner::computePath(std::vector<Util::Point>& agent_path,  Util::Point start, Util::Point goal, SteerLib::GridDatabase2D * _gSpatialDatabase, bool append_to_path)
@@ -92,19 +153,23 @@ namespace SteerLib
 		//TODO
 		std::cout<<"\nIn A*\n";
 
-        std::vector<AStarPlannerNode*> closedsed;
-        std::vector<AStarPlannerNode*> openset;
-        std::vector<AStarPlannerNode*> came_from;
+        std::vector<AStarPlannerNode> closedset;
+        std::vector<AStarPlannerNode> openset;
+        std::map<AStarPlannerNode, AStarPlannerNode> came_from;
+        std::map<Util::Point, int> visited;
+       
+        std::map<Util::Point, double> g_score;
+        g_score[start] = 0;
+        std::map<Util::Point, double> f_score;
+        f_score[start] = g_score[start] + euclidean(start, goal);
         
-        double g = 0;
-        double f = g + euclidean(start, goal);
-        
-        AStarPlannerNode* startNode = new AStarPlannerNode(start, g, f, NULL);
+        AStarPlannerNode startNode = AStarPlannerNode(start, g_score[start], f_score[start], NULL);
+        visited[start] = 1;
         openset.push_back(startNode);
         
         while(!openset.empty()){
             
-            AStarPlannerNode* curr = openset[0];
+            AStarPlannerNode curr = openset[0];
             
             int index = 0;
             for(int i = 1; i < openset.size(); i++){
@@ -114,14 +179,47 @@ namespace SteerLib
                 }
             }
             
-            if(curr->point == goal){
+            if(curr.point == goal){
                 agent_path = reconstruct_path(came_from, curr);
                 return true;
             }
             
             openset.erase(openset.begin() + index);
-            closedsed.push_back(curr);
-            
+            closedset.push_back(curr);
+
+            int currIndex = gSpatialDatabase->getCellIndexFromLocation(curr.point);
+            Util::Point p1;
+            gSpatialDatabase->getLocationFromIndex(currIndex, p1);
+            std::vector<AStarPlannerNode> neighbors = findNeighbor(p1, gSpatialDatabase);
+
+            for(AStarPlannerNode neighbor: neighbors){
+                //std::cout << node.point << std::endl;
+                int flag = 0;
+                for(AStarPlannerNode temp: closedset){
+                    if(neighbor == temp){
+                        flag = 1;
+                        break;
+                    }
+                }
+
+                if(flag == 1)
+                    continue;
+                
+                //this is calculating the differnece, euclidean here is not the heuristic function
+                double temp_g_score = g_score[curr.point] + euclidean(curr.point, neighbor.point);
+
+                if(visited[neighbor.point] == 0 || temp_g_score < g_score[neighbor.point]){
+                    g_score[neighbor.point] = temp_g_score;
+                    f_score[neighbor.point] = g_score[neighbor.point] + euclidean(neighbor.point, goal);
+                    neighbor.g = g_score[neighbor.point];
+                    neighbor.f = f_score[neighbor.point];
+                    came_from[neighbor] = curr;
+                    if(visited[neighbor.point] == 0){
+                        visited[neighbor.point] = 1;
+                        openset.push_back(neighbor);
+                    }
+                }
+            }
         }
         
 		return false;
