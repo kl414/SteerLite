@@ -146,17 +146,19 @@ namespace SteerLib
         return result;
     }
 
+    
 	bool AStarPlanner::computePath(std::vector<Util::Point>& agent_path,  Util::Point start, Util::Point goal, SteerLib::GridDatabase2D * _gSpatialDatabase, bool append_to_path)
 	{
 		gSpatialDatabase = _gSpatialDatabase;
 
 		//TODO
 		std::cout<<"\nIn A*\n";
-
+        
         std::vector<AStarPlannerNode> closedset;
         std::vector<AStarPlannerNode> openset;
         std::map<Util::Point, Util::Point> came_from;
-        std::map<Util::Point, int> visited;
+        std::map<float, int> visitedx;
+        std::map<float, int> visitedz;
        
         std::map<Util::Point, double> g_score;
         g_score[start] = 0;
@@ -164,29 +166,43 @@ namespace SteerLib
         f_score[start] = g_score[start] + euclidean(start, goal);
         
         AStarPlannerNode startNode = AStarPlannerNode(start, g_score[start], f_score[start], NULL);
-        visited[start] = 1;
+        visitedx[start.x] == 1;
+        visitedz[start.z] == 1;
         openset.push_back(startNode);
+        
+        //coordinate for goal in the cell
+        int goalIndex = gSpatialDatabase->getCellIndexFromLocation(goal);
+        Util::Point p2;
+        gSpatialDatabase->getLocationFromIndex(goalIndex, p2);
+        int count = 0;
         
         while(!openset.empty()){
             
+            count++;
+            std::cout << "count:" << count << std::endl;
             AStarPlannerNode curr = openset[0];
             
             int index = 0;
-            for(int i = 1; i < openset.size(); i++){
-                if(openset[i] < curr){
+            for(int i = 0; i < openset.size(); i++){
+                std::cout << "open point::::" << openset[i].point <<"-----" <<f_score[openset[i].point]<< std::endl;
+                if(f_score[openset[i].point] < f_score[curr.point]){
                     curr = openset[i];
                     index = i;
                 }
             }
+            std::cout << "current point::::" << curr.point <<"-----" <<f_score[curr.point]<< std::endl;
             
-            if(curr.point == goal){
+            if(curr.point == p2){
+                  std::cout << "ending" << std::endl;
+                for(std::map<Util::Point, Util::Point>::iterator it = came_from.begin(); it != came_from.end(); ++it)
+                    std::cout << it->first << "-------->" <<  it->second << std::endl;
                 agent_path = reconstruct_path(came_from, curr);
                 return true;
             }
             
             openset.erase(openset.begin() + index);
             closedset.push_back(curr);
-
+            
             int currIndex = gSpatialDatabase->getCellIndexFromLocation(curr.point);
             Util::Point p1;
             gSpatialDatabase->getLocationFromIndex(currIndex, p1);
@@ -204,21 +220,33 @@ namespace SteerLib
 
                 if(flag == 1)
                     continue;
-                
                 //this is calculating the differnece, euclidean here is not the heuristic function
                 double temp_g_score = g_score[curr.point] + euclidean(curr.point, neighbor.point);
-
-                if(visited[neighbor.point] == 0 || temp_g_score < g_score[neighbor.point]){
+                
+                if((visitedx[neighbor.point.x] == 0 && visitedz[neighbor.point.z] == 0)|| temp_g_score < g_score[neighbor.point]){
                     g_score[neighbor.point] = temp_g_score;
                     f_score[neighbor.point] = g_score[neighbor.point] + euclidean(neighbor.point, goal);
                     neighbor.g = g_score[neighbor.point];
                     neighbor.f = f_score[neighbor.point];
                     came_from[neighbor.point] = curr.point;
-                    if(visited[neighbor.point] == 0){
-                        visited[neighbor.point] = 1;
-                        openset.push_back(neighbor);
+                    visitedx[neighbor.point.x] == 1;
+                    visitedz[neighbor.point.z] == 1;
+                    
+                    int opened = 0;
+                    for(int i = 0; i < openset.size(); i++){
+                        if(openset[i] == neighbor){
+                            opened = 1;
+                        }
                     }
+                    if(opened == 0)
+                        openset.push_back(neighbor);
+                    
+                    std::cout << neighbor.point << std::endl;
+                    
+                    std::cout << "commmmfmm----" << visitedx[4.5] << visitedz[0.5] << std::endl;
                 }
+                
+                std::cout << neighbor.point <<"------" << f_score[neighbor.point]<< std::endl;
             }
         }
         
