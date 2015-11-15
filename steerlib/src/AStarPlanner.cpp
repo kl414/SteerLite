@@ -80,7 +80,7 @@ namespace SteerLib
         return distance;
     }
     
-    std::vector<Util::Point> reconstruct_path(std::map<AStarPlannerNode, AStarPlannerNode> came_from, AStarPlannerNode curr){
+    std::vector<Util::Point> reconstruct_path(std::map<Util::Point, Util::Point> came_from, AStarPlannerNode curr){
         std::vector<Util::Point> path;
         path.push_back(curr.point);
         return path;
@@ -155,7 +155,7 @@ namespace SteerLib
 
         std::vector<AStarPlannerNode> closedset;
         std::vector<AStarPlannerNode> openset;
-        std::map<AStarPlannerNode, AStarPlannerNode> came_from;
+        std::map<Util::Point, Util::Point> came_from;
         std::map<Util::Point, int> visited;
        
         std::map<Util::Point, double> g_score;
@@ -213,7 +213,7 @@ namespace SteerLib
                     f_score[neighbor.point] = g_score[neighbor.point] + euclidean(neighbor.point, goal);
                     neighbor.g = g_score[neighbor.point];
                     neighbor.f = f_score[neighbor.point];
-                    came_from[neighbor] = curr;
+                    came_from[neighbor.point] = curr.point;
                     if(visited[neighbor.point] == 0){
                         visited[neighbor.point] = 1;
                         openset.push_back(neighbor);
