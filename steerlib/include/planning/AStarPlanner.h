@@ -95,7 +95,7 @@ namespace SteerLib
 				_gSpatialDatabase : The pointer to the GridDatabase2D from the agent
 				append_to_path : An optional argument to append to agent_path instead of overwriting it.
 			*/
-            std::vector<AStarPlannerNode> findNeighbor(Util::Point p1, SteerLib::GridDatabase2D* gSpatialDatabase);
+            std::vector<AStarPlannerNode*> findNeighbor(Util::Point p1, SteerLib::GridDatabase2D* gSpatialDatabase);
 			bool computePath(std::vector<Util::Point>& agent_path, Util::Point start, Util::Point goal, SteerLib::GridDatabase2D * _gSpatialDatabase, bool append_to_path = false);
 		private:
 			SteerLib::GridDatabase2D * gSpatialDatabase;
