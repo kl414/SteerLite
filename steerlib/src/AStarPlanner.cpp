@@ -22,8 +22,9 @@
 #define OBSTACLE_CLEARANCE 1
 #define MIN(X,Y) ((X) < (Y) ? (X) : (Y))
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
-#define EUCLIDEAN 1
+#define EUCLIDEAN 0
 #define DISTANCE 1
+#define W 1
 
 namespace SteerLib
 {
@@ -79,7 +80,6 @@ namespace SteerLib
     double euclidean(Util::Point s, Util::Point g){
         double distance;
         distance = sqrt(pow((s.x - g.x), 2) + pow((s.z - g.z), 2));
-        //std::cout << distance << std::endl;
         return distance;
     }
     
@@ -148,12 +148,6 @@ namespace SteerLib
             AStarPlannerNode temp = AStarPlannerNode(p, DBL_MAX, DBL_MAX, NULL);
             result.push_back(temp);
         }
-        /*
-         std::cout << "new neighbors" << std::endl;
-         for(int i = 0; i < result.size(); i++){
-         std::cout << result[i].point << std::endl;
-         }
-         */
         
         
         return result;
@@ -202,7 +196,7 @@ namespace SteerLib
         AStarPlannerNode startNode = AStarPlannerNode(start, 0, 0, NULL);
         startNode.startNode = 1;
         startNode.g = 0;
-        startNode.f = startNode.g + heuristic(start, goal);
+        startNode.f = startNode.g + W * heuristic(start, goal);
         
         openset.push_back(startNode);
         
@@ -219,6 +213,27 @@ namespace SteerLib
                     curr = openset[i];
                     index = i;
                 }
+                
+                //this is for part2 in favor of smaller g
+                /*
+                if( openset[i].f == curr.f){
+                    if(openset[i].g < curr.g){
+                        curr = openset[i];
+                        index = i;
+                    }
+                }
+                 */
+                
+                //this is for part 2, 3, 4 (bigger g)
+                /*
+                if( openset[i].f == curr.f){
+                    if(openset[i].g > curr.g){
+                        curr = openset[i];
+                        index = i;
+                    }
+                }
+                 */
+                
             }
             if(curr.point == goal){
                 agent_path.push_back(curr.point);
@@ -245,10 +260,14 @@ namespace SteerLib
                 }
                 
                 double temp_g = curr.g + DISTANCE;
+                //below is for part 3, 4. comment out above line when using this
+                //double temp_g = curr.g + euclidean(curr.point, neighbor.point);
+                
+                
                 
                 if(temp_g < neighbor.g){
                     neighbor.g = temp_g;
-                    neighbor.f = neighbor.g + heuristic(neighbor.point, goal);
+                    neighbor.f = neighbor.g + W * heuristic(neighbor.point, goal);
                     neighbor.parentx = curr.point.x;
                     neighbor.parenty = curr.point.z;
                     if(!opened(neighbor, openset)){
