@@ -219,4 +219,5 @@ objs/SocialForcesAgent.o: ../src/SocialForcesAgent.cpp \
   ../../steerlib/include/modules/SteerBenchModule.h \
   ../../steerlib/include/modules/SteerBugModule.h \
   ../../steerlib/include/modules/TestCasePlayerModule.h \
-  ../include/SocialForces_Parameters.h ../include/SocialForcesAIModule.h
+  ../include/SocialForces_Parameters.h ../include/SocialForcesAIModule.h \
+  ../../steerlib/include/planning/AStarPlanner.h

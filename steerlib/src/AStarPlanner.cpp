@@ -24,7 +24,7 @@
 #define MAX(X,Y) ((X) > (Y) ? (X) : (Y))
 #define EUCLIDEAN 0
 #define DISTANCE 1
-#define W 1
+#define W 8
 
 namespace SteerLib
 {
@@ -214,25 +214,12 @@ namespace SteerLib
                     index = i;
                 }
                 
-                //this is for part2 in favor of smaller g
-                /*
-                if( openset[i].f == curr.f){
-                    if(openset[i].g < curr.g){
-                        curr = openset[i];
-                        index = i;
-                    }
-                }
-                 */
-                
-                //this is for part 2, 3, 4 (bigger g)
-                /*
                 if( openset[i].f == curr.f){
                     if(openset[i].g > curr.g){
                         curr = openset[i];
                         index = i;
                     }
                 }
-                 */
                 
             }
             if(curr.point == goal){
@@ -246,6 +233,8 @@ namespace SteerLib
                         }
                     }
                 }
+                std::cout << "path:" << agent_path.size() <<std::endl;
+                std::cout << "expanded node:" << closedset.size()+1 <<std::endl;
                 std::reverse(agent_path.begin(), agent_path.end());
                 return true;
             }
@@ -259,9 +248,7 @@ namespace SteerLib
                     continue;
                 }
                 
-                double temp_g = curr.g + DISTANCE;
-                //below is for part 3, 4. comment out above line when using this
-                //double temp_g = curr.g + euclidean(curr.point, neighbor.point);
+                double temp_g = curr.g + euclidean(curr.point, neighbor.point);
                 
                 
                 
